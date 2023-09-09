@@ -1,8 +1,9 @@
 interface ButtonVoteProps {
   className?: string;
+  vote: number;
 }
 
-export default function ButtonVote({ className }: ButtonVoteProps) {
+export default function ButtonVote({ className, vote = 0 }: ButtonVoteProps) {
   return (
     <div
       className={`bg-very-light-gray desktop:flex-col desktop:w-[40px] desktop:h-[100px] items-center justify-between flex rounded-[10px] gap-[10px] p-3 h-[40px]  w-[100px] ${className}`}
@@ -14,7 +15,7 @@ export default function ButtonVote({ className }: ButtonVoteProps) {
           alt=""
         />
       </button>
-      <span className="text-moderate-blue text-body-bold">12</span>
+      <span className="text-moderate-blue text-body-bold">{vote}</span>
       <button className="h-full w-full">
         <img
           className="w-[10px] h-[2.5px] m-auto text-light-grayish-blue"
