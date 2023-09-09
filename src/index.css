@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @font-face {
+    font-family: Rubik;
+    src: url("assets/fonts/Rubik-VariableFont_wght.ttf") format("truetype");
+    font-display: swap;
+    font-weight: 400 500 700;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: Rubik;
+    src: url("assets/fonts/Rubik-Italic-VariableFont_wght.ttf")
+      format("truetype");
+    font-display: swap;
+    font-weight: 400 500 700;
+    font-style: italic;
+  }
+}
