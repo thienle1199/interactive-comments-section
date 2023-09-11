@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useRef, useState } from "react";
 import { BaseComment, User } from "../types";
 import AddComment from "./AddComment";
 import ButtonVote from "./ButtonVote";
@@ -6,13 +6,20 @@ import CommentInfo from "./CommentInfo";
 import { OwnerButtonGroup } from "./OwnerButtonGroup";
 import ReplyButton from "./ReplyButton";
 import Modal from "./Modal";
+import TextAreaAutoHeight from "./TextAreaAutoHeight";
+import useOutsideAlerter from "../hooks/useOnClickOutSide";
 
 interface CommentProps {
   comment: BaseComment;
   currentUser: User;
   replyingTo?: string;
   onDelete: (id: string | number) => void;
-  onReply: (commentId: number | string, content: string) => void;
+  onReply: (
+    commentId: number | string,
+    content: string,
+    replyingTo: string,
+  ) => void;
+  onUpdate: (id: number | string, content: string) => void;
   children?: ReactNode;
 }
 
@@ -23,15 +30,21 @@ export default function Comment({
   replyingTo,
   onDelete,
   onReply,
+  onUpdate,
 }: CommentProps) {
-  const [isReplying, setIsReplying] = useState(false);
+  const [isReplyingTo, setReplyingTo] = useState("");
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEdtContent] = useState(content);
+
+  const editRef = useRef(null);
+  useOutsideAlerter(editRef, () => setIsEditing(false));
 
   const isOwn = currentUser.username === user.username;
 
   return (
-    <div className="transition-all flex flex-col gap-4 desktop:gap-5">
-      <article className="p-6 grid grid-cols-2 desktop:grid-cols-[auto_1fr_auto] gap-4 desktop:gap-x-6 desktop:gap-y-4 rounded-lg  bg-white">
+    <div className="flex flex-col gap-4 transition-all desktop:gap-5">
+      <article className="grid grid-cols-2 gap-4 rounded-lg bg-white p-6 desktop:grid-cols-[auto_1fr_auto] desktop:gap-x-6 desktop:gap-y-4">
         <CommentInfo
           isOwn={isOwn}
           userAvatar={user.image.webp}
@@ -39,39 +52,60 @@ export default function Comment({
           createdAt={createdAt}
           className="col-span-2 desktop:col-span-1"
         />
-        <p className="text-body text-grayish-blue col-span-2">
-          {replyingTo ? (
-            <span className="text-heading-m text-moderate-blue">
-              @{replyingTo}
-            </span>
-          ) : (
-            ""
-          )}{" "}
-          {content}
-        </p>
+
+        {isEditing ? (
+          <div ref={editRef} className="flex flex-col gap-4">
+            <TextAreaAutoHeight
+              value={editContent}
+              onChange={(evt) => setEdtContent(evt.target.value)}
+              autoFocus
+              className="col-span-2 block h-auto min-h-[96px] w-full resize-none appearance-none rounded-lg border border-solid border-light-gray px-6 py-3 focus-visible:outline-moderate-blue desktop:col-span-1"
+            />
+            <button
+              onClick={() => {
+                onUpdate(id, editContent);
+                setIsEditing(false);
+              }}
+              className="w-[104px] justify-self-end rounded-lg bg-moderate-blue py-3 uppercase text-white desktop:col-start-3 desktop:row-start-1 desktop:h-fit"
+            >
+              Update
+            </button>
+          </div>
+        ) : (
+          <p className="col-span-2 text-body text-grayish-blue">
+            {replyingTo && !isEditing && (
+              <span className="text-heading-m text-moderate-blue">
+                {`@ ${replyingTo} `}
+              </span>
+            )}
+            {content}
+          </p>
+        )}
+
         <ButtonVote
           vote={score}
-          className="desktop:row-start-1 desktop:col-start-1 desktop:row-span-2"
+          className="desktop:col-start-1 desktop:row-span-2 desktop:row-start-1"
         />
         {isOwn ? (
           <OwnerButtonGroup
+            onEdit={() => setIsEditing(true)}
             onDelete={() => setModalOpen(true)}
-            className="desktop:row-start-1 desktop:col-start-3 justify-self-end"
+            className="justify-self-end desktop:col-start-3 desktop:row-start-1"
           />
         ) : (
           <ReplyButton
-            onClick={() => setIsReplying(true)}
-            className="desktop:row-start-1 desktop:col-start-3 justify-self-end"
+            onClick={() => setReplyingTo(user.username)}
+            className="justify-self-end desktop:col-start-3 desktop:row-start-1"
           />
         )}
       </article>
 
-      {isReplying && (
+      {isReplyingTo && (
         <AddComment
-          onClickOutSide={() => setIsReplying(false)}
+          onClickOutSide={() => setReplyingTo("")}
           currentUserAvatar={currentUser.image.webp}
           onAddComment={(content) => {
-            onReply(id, content);
+            onReply(id, content, isReplyingTo);
           }}
         />
       )}

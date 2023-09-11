@@ -4,12 +4,15 @@ import { Comment as CommentType, DataType, ReplyComment } from "./types";
 import AddComment from "./components/AddComment";
 import { useEffect, useReducer } from "react";
 import { v4 } from "uuid";
+import { timeAgo } from "./util/timeAgo";
 
 enum CommentActionsTypes {
   ADD_COMMENT = "ADD_COMMENT",
   DELETE_COMMENT = "DELETE_COMMENT",
   REPLY_COMMENT = "REPLY_COMMENT",
   DELETE_REPLY = "DELETE_REPLY",
+  EDIT_COMMENT = "EDIT_COMMENT",
+  EDIT_REPLY = "EDIT_REPLY",
 }
 
 type CommentState = CommentType[];
@@ -40,6 +43,23 @@ type ReplyCommentAction = {
   };
 };
 
+type EditCommentAction = {
+  type: CommentActionsTypes.EDIT_COMMENT;
+  payload: {
+    commentId: number | string;
+    content: string;
+  };
+};
+
+type EditReplyAction = {
+  type: CommentActionsTypes.EDIT_REPLY;
+  payload: {
+    commentId: string | number;
+    replyId: string | number;
+    content: string;
+  };
+};
+
 const commentReducer = (
   state: CommentState,
   action:
@@ -47,6 +67,8 @@ const commentReducer = (
     | DeleteCommentAction
     | ReplyCommentAction
     | DeleteReplyAction
+    | EditCommentAction
+    | EditReplyAction,
 ) => {
   switch (action.type) {
     case CommentActionsTypes.ADD_COMMENT:
@@ -62,7 +84,7 @@ const commentReducer = (
           return {
             ...comment,
             replies: comment.replies.filter(
-              (rep) => rep.id !== action.payload.replyId
+              (rep) => rep.id !== action.payload.replyId,
             ),
           };
         }
@@ -77,6 +99,40 @@ const commentReducer = (
           return {
             ...comment,
             replies: [...comment.replies, action.payload.replyComment],
+          };
+        }
+        return comment;
+      });
+    }
+
+    case CommentActionsTypes.EDIT_COMMENT: {
+      return state.map((comment) => {
+        if (comment.id === action.payload.commentId) {
+          return {
+            ...comment,
+            content: action.payload.content,
+          };
+        }
+
+        return comment;
+      });
+    }
+
+    case CommentActionsTypes.EDIT_REPLY: {
+      console.log("action.payload", action.payload);
+      return state.map((comment) => {
+        if (comment.id === action.payload.commentId) {
+          return {
+            ...comment,
+            replies: comment.replies.map((rep) => {
+              if (rep.id === action.payload.replyId) {
+                return {
+                  ...rep,
+                  content: action.payload.content,
+                };
+              }
+              return rep;
+            }),
           };
         }
         return comment;
@@ -103,7 +159,7 @@ function App() {
   const [state, dispatch] = useReducer(
     commentReducer,
     comments,
-    createCommentReducerInitialState
+    createCommentReducerInitialState,
   );
 
   useEffect(() => {
@@ -111,7 +167,7 @@ function App() {
   }, [state]);
 
   return (
-    <main className="font-rubik px-4 py-8 desktop:py-16 container mx-auto max-w-[1024px]">
+    <main className="container mx-auto max-w-[1024px] px-4 py-8 font-rubik desktop:py-16">
       <div className="flex flex-col gap-4 desktop:gap-5">
         {state.map((comment) => (
           <Comment
@@ -121,7 +177,7 @@ function App() {
                 payload: id,
               })
             }
-            onReply={(id, content) => {
+            onReply={(id, content, replyingTo) => {
               dispatch({
                 type: CommentActionsTypes.REPLY_COMMENT,
                 payload: {
@@ -130,23 +186,47 @@ function App() {
                     content: content,
                     createdAt: new Date(Date.now()).toString(),
                     id: v4(),
-                    replyingTo: "",
+                    replyingTo: replyingTo,
                     score: 0,
                     user: currentUser,
                   },
                 },
               });
             }}
+            onUpdate={(id, content) => {
+              dispatch({
+                type: CommentActionsTypes.EDIT_COMMENT,
+                payload: {
+                  commentId: id,
+                  content: content,
+                },
+              });
+            }}
             currentUser={currentUser}
             key={comment.id}
-            comment={comment}
+            comment={{
+              ...comment,
+              createdAt: comment.createdAt.includes("ago")
+                ? comment.createdAt
+                : timeAgo(new Date(comment.createdAt)),
+            }}
           >
             {comment.replies.length > 0 && (
               <div className="flex">
-                <div className="w-[2px] flex-shrink-0 bg-light-gray mx-4 desktop:mx-11"></div>
-                <div className="flex flex-col flex-1 gap-4 desktop:gap-6">
+                <div className="mx-4 w-[2px] flex-shrink-0 bg-light-gray desktop:mx-11"></div>
+                <div className="flex flex-1 flex-col gap-4 desktop:gap-6">
                   {comment.replies.map((rep) => (
                     <Comment
+                      onUpdate={(id, content) => {
+                        dispatch({
+                          type: CommentActionsTypes.EDIT_REPLY,
+                          payload: {
+                            commentId: comment.id,
+                            content: content,
+                            replyId: id,
+                          },
+                        });
+                      }}
                       currentUser={currentUser}
                       key={rep.id}
                       replyingTo={rep.replyingTo}
@@ -159,7 +239,7 @@ function App() {
                           },
                         });
                       }}
-                      onReply={(_commentId, content) =>
+                      onReply={(_commentId, content, replyingTo) =>
                         dispatch({
                           type: CommentActionsTypes.REPLY_COMMENT,
                           payload: {
@@ -168,14 +248,19 @@ function App() {
                               content,
                               createdAt: new Date(Date.now()).toString(),
                               id: v4(),
-                              replyingTo: comment.user.username,
+                              replyingTo: replyingTo,
                               score: 0,
                               user: currentUser,
                             },
                           },
                         })
                       }
-                      comment={rep}
+                      comment={{
+                        ...rep,
+                        createdAt: rep.createdAt.includes("ago")
+                          ? rep.createdAt
+                          : timeAgo(new Date(rep.createdAt)),
+                      }}
                     />
                   ))}
                 </div>
