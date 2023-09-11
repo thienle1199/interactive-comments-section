@@ -8,7 +8,7 @@ export interface User {
 export interface BaseComment {
   content: string;
   createdAt: string;
-  id: number;
+  id: number | string;
   score: number;
   user: User;
 }

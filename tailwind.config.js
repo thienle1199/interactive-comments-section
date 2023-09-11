@@ -25,6 +25,7 @@ export default {
       "light-gray": "hsl(223, 19%, 93%)",
       "very-light-gray": "hsl(228, 33%, 97%)",
       white: "hsl(0, 0%, 100%)",
+      black: "hsl(0, 0%, 0%)",
     },
     fontFamily: {
       rubik: "Rubik, sans-serif",
