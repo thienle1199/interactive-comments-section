@@ -23,10 +23,10 @@ export default function AddComment({
   return (
     <div
       ref={ref}
-      className={`grid grid-cols-2 desktop:grid-cols-[auto_1fr_auto] p-4 gap-4 bg-white rounded-lg ${className}`}
+      className={`grid grid-cols-2 gap-4 rounded-lg bg-white p-4 desktop:grid-cols-[auto_1fr_auto] ${className}`}
     >
       <TextAreaAutoHeight
-        className="col-span-2 min-h-[96px] desktop:col-span-1 focus-visible:outline-moderate-blue appearance-none block w-full px-6 py-3 rounded-lg resize-none h-auto border-light-gray border-solid border"
+        className="col-span-2 block h-auto min-h-[96px] w-full resize-none appearance-none rounded-lg border border-solid border-light-gray px-6 py-3 focus-visible:outline-moderate-blue desktop:col-span-1"
         placeholder="Add a comment"
         value={value}
         onChange={(evt) => setValue(evt.target.value)}
@@ -35,7 +35,7 @@ export default function AddComment({
       ></TextAreaAutoHeight>
 
       <img
-        className="h-[32px] w-[32px] desktop:h-[40px] desktop:w-[40px] self-center desktop:self-start desktop:col-start-1 desktop:row-start-1"
+        className="h-[32px] w-[32px] self-center desktop:col-start-1 desktop:row-start-1 desktop:h-[40px] desktop:w-[40px] desktop:self-start"
         src={currentUserAvatar}
         alt="avatar"
       />
@@ -44,7 +44,8 @@ export default function AddComment({
           onAddComment(value);
           setValue("");
         }}
-        className="desktop:row-start-1 desktop:h-fit desktop:col-start-3 justify-self-end uppercase py-3 w-[104px] bg-moderate-blue text-white rounded-lg"
+        disabled={value.length === 0}
+        className="w-[104px] justify-self-end rounded-lg bg-moderate-blue py-3 uppercase text-white hover:bg-light-grayish-blue disabled:bg-grayish-blue/25 desktop:col-start-3 desktop:row-start-1 desktop:h-fit"
       >
         Send
       </button>

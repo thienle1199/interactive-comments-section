@@ -70,7 +70,8 @@ export default function Comment({
                 onUpdate(id, editContent);
                 setIsEditing(false);
               }}
-              className="w-[104px] justify-self-end rounded-lg bg-moderate-blue py-3 uppercase text-white desktop:col-start-3 desktop:row-start-1 desktop:h-fit"
+              disabled={editContent.length === 0}
+              className="w-[104px] justify-self-end rounded-lg bg-moderate-blue py-3 uppercase text-white hover:bg-light-grayish-blue disabled:bg-grayish-blue/25 desktop:col-start-3 desktop:row-start-1 desktop:h-fit"
             >
               Update
             </button>
