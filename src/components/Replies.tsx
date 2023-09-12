@@ -7,6 +7,7 @@ import {
 import Comment from "./Comment";
 import { v4 } from "uuid";
 import { timeAgo } from "../util/timeAgo";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 type RepliesProps = {
   replies: ReplyComment[];
@@ -21,10 +22,15 @@ const Replies: React.FC<RepliesProps> = ({
   currentUser,
   dispatch,
 }) => {
+  const [replyListRef] = useAutoAnimate<HTMLDivElement>();
+
   return (
     <div className="flex">
       <div className="mx-4 w-[2px] flex-shrink-0 bg-light-gray desktop:mx-11"></div>
-      <div className="flex flex-1 flex-col gap-4 desktop:gap-6">
+      <div
+        ref={replyListRef}
+        className="flex flex-1 flex-col gap-4 desktop:gap-6"
+      >
         {replies.map((rep) => (
           <Comment
             onDownVote={() =>

@@ -7,6 +7,7 @@ import { v4 } from "uuid";
 import { timeAgo } from "./util/timeAgo";
 import { CommentActionsTypes, commentReducer } from "./reducers/CommentReducer";
 import Replies from "./components/Replies";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 const localStorageDataKey = "comment-data";
 
@@ -29,13 +30,15 @@ function App() {
     createCommentReducerInitialState,
   );
 
+  const [commentListRef] = useAutoAnimate<HTMLDivElement>();
+
   useEffect(() => {
     localStorage.setItem(localStorageDataKey, JSON.stringify(state));
   }, [state]);
 
   return (
     <main className="container mx-auto max-w-[1024px] px-4 py-8 font-rubik desktop:py-16">
-      <div className="flex flex-col gap-4 desktop:gap-5">
+      <div ref={commentListRef} className="flex flex-col gap-4 desktop:gap-5">
         {state
           .sort((a, b) => b.score - a.score)
           .map((comment) => (

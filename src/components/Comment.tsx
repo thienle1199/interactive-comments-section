@@ -8,6 +8,7 @@ import ReplyButton from "./ReplyButton";
 import Modal from "./Modal";
 import TextAreaAutoHeight from "./TextAreaAutoHeight";
 import useOutsideAlerter from "../hooks/useOnClickOutSide";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 interface CommentProps {
   comment: BaseComment;
@@ -41,13 +42,19 @@ export default function Comment({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEdtContent] = useState(content);
 
+  const [containerRef] = useAutoAnimate();
+
   const editRef = useRef(null);
+
   useOutsideAlerter(editRef, () => setIsEditing(false));
 
   const isOwn = currentUser.username === user.username;
 
   return (
-    <div className="flex flex-col gap-4 transition-all desktop:gap-5">
+    <div
+      ref={containerRef}
+      className="flex flex-col gap-4 transition-all desktop:gap-5"
+    >
       <article className="grid grid-cols-2 gap-4 rounded-lg bg-white p-6 desktop:grid-cols-[auto_1fr_auto] desktop:gap-x-6 desktop:gap-y-4">
         <CommentInfo
           isOwn={isOwn}
