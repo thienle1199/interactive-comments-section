@@ -143,7 +143,6 @@ export const commentReducer = (state: CommentState, action: CommentActions) => {
     }
 
     case CommentActionsTypes.UP_VOTE: {
-      console.log(action);
       return state.map((comment) => {
         if (comment.id === action.payload.commentId) {
           if (action.payload.replyId) {
