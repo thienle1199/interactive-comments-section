@@ -37,7 +37,7 @@ function App() {
   }, [state]);
 
   return (
-    <main className="container mx-auto max-w-[1024px] px-4 py-8 font-rubik desktop:py-16">
+    <main className="container mx-auto max-w-[730px] px-4 py-8 font-rubik desktop:py-16">
       <div ref={commentListRef} className="flex flex-col gap-4 desktop:gap-5">
         {state
           .sort((a, b) => b.score - a.score)
