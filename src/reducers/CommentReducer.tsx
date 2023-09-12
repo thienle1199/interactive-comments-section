@@ -153,7 +153,7 @@ export const commentReducer = (state: CommentState, action: CommentActions) => {
                 rep.id === action.payload.replyId
                   ? {
                       ...rep,
-                      score: rep.score++,
+                      score: rep.score + 1,
                     }
                   : rep,
               ),
@@ -162,7 +162,7 @@ export const commentReducer = (state: CommentState, action: CommentActions) => {
 
           return {
             ...comment,
-            score: comment.score++,
+            score: comment.score + 1,
           };
         }
 
@@ -180,7 +180,7 @@ export const commentReducer = (state: CommentState, action: CommentActions) => {
                 rep.id === action.payload.replyId
                   ? {
                       ...rep,
-                      score: rep.score--,
+                      score: rep.score - 1,
                     }
                   : rep,
               ),
@@ -189,7 +189,7 @@ export const commentReducer = (state: CommentState, action: CommentActions) => {
 
           return {
             ...comment,
-            score: comment.score--,
+            score: comment.score - 1,
           };
         }
 
