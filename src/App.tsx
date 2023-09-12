@@ -1,209 +1,12 @@
 import Comment from "./components/Comment";
 import data from "../data.json";
-import { Comment as CommentType, DataType, ReplyComment } from "./types";
+import { Comment as CommentType, DataType } from "./types";
 import AddComment from "./components/AddComment";
 import { useEffect, useReducer } from "react";
 import { v4 } from "uuid";
 import { timeAgo } from "./util/timeAgo";
-
-enum CommentActionsTypes {
-  ADD_COMMENT = "ADD_COMMENT",
-  DELETE_COMMENT = "DELETE_COMMENT",
-  REPLY_COMMENT = "REPLY_COMMENT",
-  DELETE_REPLY = "DELETE_REPLY",
-  EDIT_COMMENT = "EDIT_COMMENT",
-  EDIT_REPLY = "EDIT_REPLY",
-  UP_VOTE = "UP_VOTE",
-  DOWN_VOTE = "DOWN_VOTE",
-}
-
-type CommentState = CommentType[];
-
-type AddCommentAction = {
-  type: CommentActionsTypes.ADD_COMMENT;
-  payload: CommentType;
-};
-
-type DeleteCommentAction = {
-  type: CommentActionsTypes.DELETE_COMMENT;
-  payload: number | string;
-};
-
-type DeleteReplyAction = {
-  type: CommentActionsTypes.DELETE_REPLY;
-  payload: {
-    commentId: number | string;
-    replyId: number | string;
-  };
-};
-
-type ReplyCommentAction = {
-  type: CommentActionsTypes.REPLY_COMMENT;
-  payload: {
-    commentId: string | number;
-    replyComment: ReplyComment;
-  };
-};
-
-type EditCommentAction = {
-  type: CommentActionsTypes.EDIT_COMMENT;
-  payload: {
-    commentId: number | string;
-    content: string;
-  };
-};
-
-type EditReplyAction = {
-  type: CommentActionsTypes.EDIT_REPLY;
-  payload: {
-    commentId: string | number;
-    replyId: string | number;
-    content: string;
-  };
-};
-
-type VoteAction = {
-  type: CommentActionsTypes.UP_VOTE | CommentActionsTypes.DOWN_VOTE;
-  payload: {
-    commentId: string | number;
-    replyId?: string | number;
-  };
-};
-
-const commentReducer = (
-  state: CommentState,
-  action:
-    | AddCommentAction
-    | DeleteCommentAction
-    | ReplyCommentAction
-    | DeleteReplyAction
-    | EditCommentAction
-    | EditReplyAction
-    | VoteAction,
-) => {
-  switch (action.type) {
-    case CommentActionsTypes.ADD_COMMENT:
-      return [...state, action.payload];
-
-    case CommentActionsTypes.DELETE_COMMENT: {
-      return state.filter((comment) => comment.id !== action.payload);
-    }
-
-    case CommentActionsTypes.DELETE_REPLY: {
-      return state.map((comment) => {
-        if (comment.id === action.payload.commentId) {
-          return {
-            ...comment,
-            replies: comment.replies.filter(
-              (rep) => rep.id !== action.payload.replyId,
-            ),
-          };
-        }
-
-        return comment;
-      });
-    }
-
-    case CommentActionsTypes.REPLY_COMMENT: {
-      return state.map((comment) => {
-        if (comment.id === action.payload.commentId) {
-          return {
-            ...comment,
-            replies: [...comment.replies, action.payload.replyComment],
-          };
-        }
-        return comment;
-      });
-    }
-
-    case CommentActionsTypes.EDIT_COMMENT: {
-      return state.map((comment) => {
-        if (comment.id === action.payload.commentId) {
-          return {
-            ...comment,
-            content: action.payload.content,
-          };
-        }
-
-        return comment;
-      });
-    }
-
-    case CommentActionsTypes.EDIT_REPLY: {
-      return state.map((comment) => {
-        if (comment.id === action.payload.commentId) {
-          return {
-            ...comment,
-            replies: comment.replies.map((rep) => {
-              if (rep.id === action.payload.replyId) {
-                return {
-                  ...rep,
-                  content: action.payload.content,
-                };
-              }
-              return rep;
-            }),
-          };
-        }
-        return comment;
-      });
-    }
-
-    case CommentActionsTypes.UP_VOTE: {
-      return state.map((comment) => {
-        if (comment.id === action.payload.commentId) {
-          if (action.payload.replyId) {
-            return {
-              ...comment,
-              replies: comment.replies.map((rep) =>
-                rep.id === action.payload.replyId
-                  ? {
-                      ...rep,
-                      score: rep.score++,
-                    }
-                  : rep,
-              ),
-            };
-          }
-
-          return {
-            ...comment,
-            score: comment.score++,
-          };
-        }
-
-        return comment;
-      });
-    }
-
-    case CommentActionsTypes.DOWN_VOTE: {
-      return state.map((comment) => {
-        if (comment.id === action.payload.commentId) {
-          if (action.payload.replyId) {
-            return {
-              ...comment,
-              replies: comment.replies.map((rep) =>
-                rep.id === action.payload.replyId
-                  ? {
-                      ...rep,
-                      score: rep.score--,
-                    }
-                  : rep,
-              ),
-            };
-          }
-
-          return {
-            ...comment,
-            score: comment.score--,
-          };
-        }
-
-        return comment;
-      });
-    }
-  }
-};
+import { CommentActionsTypes, commentReducer } from "./reducers/CommentReducer";
+import Replies from "./components/Replies";
 
 const localStorageDataKey = "comment-data";
 
@@ -294,81 +97,17 @@ function App() {
               }}
             >
               {comment.replies.length > 0 && (
-                <div className="flex">
-                  <div className="mx-4 w-[2px] flex-shrink-0 bg-light-gray desktop:mx-11"></div>
-                  <div className="flex flex-1 flex-col gap-4 desktop:gap-6">
-                    {comment.replies.reverse().map((rep) => (
-                      <Comment
-                        onDownVote={() =>
-                          dispatch({
-                            type: CommentActionsTypes.DOWN_VOTE,
-                            payload: {
-                              commentId: comment.id,
-                              replyId: rep.id,
-                            },
-                          })
-                        }
-                        onUpVote={() =>
-                          dispatch({
-                            type: CommentActionsTypes.UP_VOTE,
-                            payload: {
-                              commentId: comment.id,
-                              replyId: rep.id,
-                            },
-                          })
-                        }
-                        onUpdate={(id, content) => {
-                          dispatch({
-                            type: CommentActionsTypes.EDIT_REPLY,
-                            payload: {
-                              commentId: comment.id,
-                              content: content,
-                              replyId: id,
-                            },
-                          });
-                        }}
-                        currentUser={currentUser}
-                        key={rep.id}
-                        replyingTo={rep.replyingTo}
-                        onDelete={() => {
-                          dispatch({
-                            type: CommentActionsTypes.DELETE_REPLY,
-                            payload: {
-                              commentId: comment.id,
-                              replyId: rep.id,
-                            },
-                          });
-                        }}
-                        onReply={(_commentId, content, replyingTo) =>
-                          dispatch({
-                            type: CommentActionsTypes.REPLY_COMMENT,
-                            payload: {
-                              commentId: comment.id,
-                              replyComment: {
-                                content,
-                                createdAt: new Date(Date.now()).toString(),
-                                id: v4(),
-                                replyingTo: replyingTo,
-                                score: 0,
-                                user: currentUser,
-                              },
-                            },
-                          })
-                        }
-                        comment={{
-                          ...rep,
-                          createdAt: rep.createdAt.includes("ago")
-                            ? rep.createdAt
-                            : timeAgo(new Date(rep.createdAt)),
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
+                <Replies
+                  replies={comment.replies}
+                  commentId={comment.id}
+                  currentUser={currentUser}
+                  dispatch={dispatch}
+                />
               )}
             </Comment>
           ))}
       </div>
+
       <AddComment
         className="mt-4 desktop:mt-5"
         currentUserAvatar={image.webp}
