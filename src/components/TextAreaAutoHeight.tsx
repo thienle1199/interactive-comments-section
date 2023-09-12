@@ -3,8 +3,21 @@ import React, { useRef, useEffect, TextareaHTMLAttributes } from "react";
 // Create a type that extends the built-in TextareaHTMLAttributes type.
 type TextAreaAutoHeightProps = TextareaHTMLAttributes<HTMLTextAreaElement>;
 
-const TextAreaAutoHeight: React.FC<TextAreaAutoHeightProps> = (props) => {
+const TextAreaAutoHeight: React.FC<TextAreaAutoHeightProps> = ({
+  autoFocus,
+  ...props
+}) => {
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    if (!textAreaRef.current) return;
+    if (autoFocus && textAreaRef.current) {
+      const length = textAreaRef.current.value.length;
+      textAreaRef.current.selectionStart = length;
+      textAreaRef.current.selectionEnd = length;
+      textAreaRef.current.focus();
+    }
+  }, [autoFocus]);
 
   const handleAutoResize = () => {
     if (textAreaRef.current) {

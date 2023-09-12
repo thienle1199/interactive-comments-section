@@ -1,24 +1,31 @@
 interface ButtonVoteProps {
   className?: string;
   vote: number;
+  onUpVote: () => void;
+  onDownVote: () => void;
 }
 
-export default function ButtonVote({ className, vote = 0 }: ButtonVoteProps) {
+export default function ButtonVote({
+  className,
+  vote = 0,
+  onDownVote,
+  onUpVote,
+}: ButtonVoteProps) {
   return (
     <div
-      className={`bg-very-light-gray desktop:flex-col desktop:w-[40px] desktop:h-[100px] items-center justify-between flex rounded-[10px] gap-[10px] p-3 h-[40px]  w-[100px] ${className}`}
+      className={`flex h-[40px] w-[100px] items-center justify-between gap-[10px] rounded-[10px] bg-very-light-gray p-3 desktop:h-[100px] desktop:w-[40px]  desktop:flex-col ${className}`}
     >
-      <button className="h-full w-full">
+      <button onClick={onUpVote} className="h-full w-full">
         <img
-          className="w-[10px] h-[10px] m-auto text-light-grayish-blue"
+          className="m-auto h-[10px] w-[10px] text-light-grayish-blue"
           src="./images/icon-plus.svg"
           alt=""
         />
       </button>
-      <span className="text-moderate-blue text-body-bold">{vote}</span>
-      <button className="h-full w-full">
+      <span className="text-body-bold text-moderate-blue">{vote}</span>
+      <button onClick={onDownVote} className="h-full w-full">
         <img
-          className="w-[10px] h-[2.5px] m-auto text-light-grayish-blue"
+          className="m-auto h-[2.5px] w-[10px] text-light-grayish-blue"
           src="./images/icon-minus.svg"
           alt=""
         />

@@ -20,6 +20,8 @@ interface CommentProps {
     replyingTo: string,
   ) => void;
   onUpdate: (id: number | string, content: string) => void;
+  onUpVote: () => void;
+  onDownVote: () => void;
   children?: ReactNode;
 }
 
@@ -30,6 +32,8 @@ export default function Comment({
   replyingTo,
   onDelete,
   onReply,
+  onUpVote,
+  onDownVote,
   onUpdate,
 }: CommentProps) {
   const [isReplyingTo, setReplyingTo] = useState("");
@@ -50,11 +54,11 @@ export default function Comment({
           userAvatar={user.image.webp}
           userName={user.username}
           createdAt={createdAt}
-          className="col-span-2 desktop:col-span-1"
+          className="col-span-2 h-[32px] desktop:col-span-1"
         />
 
         {isEditing ? (
-          <div ref={editRef} className="flex flex-col gap-4">
+          <div ref={editRef} className="col-span-2 flex flex-col gap-4">
             <TextAreaAutoHeight
               value={editContent}
               onChange={(evt) => setEdtContent(evt.target.value)}
@@ -83,18 +87,27 @@ export default function Comment({
         )}
 
         <ButtonVote
+          onDownVote={onDownVote}
+          onUpVote={onUpVote}
           vote={score}
           className="desktop:col-start-1 desktop:row-span-2 desktop:row-start-1"
         />
         {isOwn ? (
           <OwnerButtonGroup
-            onEdit={() => setIsEditing(true)}
+            onEdit={() => {
+              setIsEditing(true);
+              if (editRef.current) {
+                editRef.current;
+              }
+            }}
             onDelete={() => setModalOpen(true)}
-            className="justify-self-end desktop:col-start-3 desktop:row-start-1"
+            className="h-[32px] justify-self-end desktop:col-start-3 desktop:row-start-1"
           />
         ) : (
           <ReplyButton
-            onClick={() => setReplyingTo(user.username)}
+            onClick={() => {
+              setReplyingTo(user.username);
+            }}
             className="justify-self-end desktop:col-start-3 desktop:row-start-1"
           />
         )}
@@ -106,6 +119,7 @@ export default function Comment({
           currentUserAvatar={currentUser.image.webp}
           onAddComment={(content) => {
             onReply(id, content, isReplyingTo);
+            setReplyingTo("");
           }}
         />
       )}
